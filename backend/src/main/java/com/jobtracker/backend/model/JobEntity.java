@@ -38,4 +38,20 @@ public class JobEntity {
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference(value = "job-rounds")
     private List<RoundEntity> rounds = new ArrayList<>();
+
+    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference(value = "job-documents")
+    private List<DocumentEntity> documents = new ArrayList<>();
+
+    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference(value = "job-notifications")
+    private List<NotificationEntity> notifications = new ArrayList<>();
+
+    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference(value = "job-tasks")
+    private List<TaskEntity> tasks = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "associatedJobs")
+    @JsonBackReference(value = "contact-jobs")
+    private List<ContactEntity> associatedContacts = new ArrayList<>();
 }
