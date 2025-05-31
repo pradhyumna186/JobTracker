@@ -2,9 +2,9 @@ package com.jobtracker.backend.controller;
 
 import com.jobtracker.backend.model.JobEntity;
 import com.jobtracker.backend.model.RoundEntity;
-import com.jobtracker.backend.repository.JobRepository;
 import com.jobtracker.backend.service.JobService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -16,35 +16,31 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/jobs")
 @RequiredArgsConstructor
+@Slf4j
 public class JobController {
 
     private final JobService jobService;
-    private final JobRepository jobRepository;
 
-    // ✅ THIS IS NEWLY ADDED
     @PostMapping
     public ResponseEntity<JobEntity> createJob(@RequestBody JobEntity job, Authentication authentication) {
+        log.info("[DEBUG] Creating job for user: {} with job: {}", authentication.getName(), job);
         JobEntity savedJob = jobService.createJob(job, authentication);
+        log.info("[DEBUG] Saved job: {}", savedJob);
         return ResponseEntity.ok(savedJob);
     }
 
-    // ✅ This already exists and is correct
     @PostMapping("/{jobId}/rounds")
     public ResponseEntity<?> addRoundToJob(@PathVariable Long jobId, @RequestBody RoundEntity roundRequest) {
-        JobEntity job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
-
-        roundRequest.setJob(job); // connect round to this job
-        job.getRounds().add(roundRequest);
-
-        jobRepository.save(job);
-
+        jobService.addRoundToJob(jobId, roundRequest);
         return ResponseEntity.ok("Round added successfully");
     }
 
     @GetMapping
     public List<JobEntity> getUserJobs(Authentication authentication) {
-        return jobService.getUserJobs(authentication);
+        log.info("[DEBUG] Fetching jobs for user: {}", authentication.getName());
+        List<JobEntity> jobs = jobService.getUserJobs(authentication);
+        log.info("[DEBUG] Jobs found: {}", jobs.size());
+        return jobs;
     }
 
     @GetMapping("/{jobId}")
@@ -60,8 +56,7 @@ public class JobController {
 
     @DeleteMapping("/{jobId}")
     public void deleteJob(@PathVariable Long jobId, Authentication authentication) {
-        System.out.println("Received request to delete job with ID: " + jobId);
-        System.out.println("User trying to delete: " + authentication.getName());
+        log.info("Deleting job with ID: {} for user: {}", jobId, authentication.getName());
         jobService.deleteJob(jobId, authentication);
     }
 

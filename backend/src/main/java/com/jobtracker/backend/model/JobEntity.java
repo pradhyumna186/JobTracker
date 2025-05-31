@@ -3,18 +3,19 @@ package com.jobtracker.backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class JobEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,48 +23,19 @@ public class JobEntity {
 
     private String company;
     private String position;
-    private String status;
-
-    private String jobType;   // Internship / Full-Time
-    private String field;     // SDE / Data Science / etc.
-    private String role;      // Backend Developer etc.
-
-    private Integer progress;  // 0–100%
-
+    private String status;  // Applied, Interview, Offered, Rejected
     private LocalDate dateApplied;
-
     private String location;
+    private String source;  // LinkedIn, Company Website, Referral
+    private String notes;   // Optional notes
+    private int progress;   // 0-100 representing application progress
 
-    private String salaryRange;
-
-    private String notes;
-
-    private String jobPostUrl;
-
-    // 🔥 New Features Added:
-    private String applicationSource; // LinkedIn, Company Website, Referral, etc.
-
-    private String applicationLink;   // URL to job post
-
-    private LocalDateTime nextInterviewDate; // Next scheduled interview datetime
-
-    private String priority; // High / Normal
-
-    private String offerSalary; // Salary offered if offer received
-
-    private LocalDate joiningDate; // Expected joining date
-
-    private String rejectionReason; // Reason if rejected
-
-    private Boolean archived; // Mark job as archived (default false)
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    @JsonBackReference
+    @JsonBackReference(value = "user-jobs")
     private UserEntity user;
 
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @JsonManagedReference(value = "job-rounds")
     private List<RoundEntity> rounds = new ArrayList<>();
-
 }

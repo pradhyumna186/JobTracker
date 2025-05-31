@@ -1,54 +1,135 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import {
+  Container,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Link,
+  Paper,
+  Alert,
+} from '@mui/material';
 
 function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setError('');
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
     try {
-      await axios.post('http://localhost:8080/api/auth/register', {
-        username,
-        password,
+      const response = await fetch('http://localhost:8080/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
       });
-      alert('Registration successful! Please login.');
-      navigate('/login');
-    } catch (error) {
-      console.error(error);
-      alert('Registration failed. Try a different username.');
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      navigate('/login', { state: { from: 'register' } });
+    } catch (err) {
+      setError(err.message || 'An error occurred during registration');
     }
   };
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '100px' }}>
-      <h1>Register</h1>
-      <form onSubmit={handleRegister}>
-        <div>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </div>
-        <div style={{ marginTop: '10px' }}>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        <div style={{ marginTop: '20px' }}>
-          <button type="submit">Register</button>
-        </div>
-      </form>
-    </div>
+    <Container component="main" maxWidth="xs">
+      <Box
+        sx={{
+          marginTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Paper
+          elevation={3}
+          sx={{
+            padding: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
+          <Typography component="h1" variant="h5">
+            Sign Up
+          </Typography>
+          {error && (
+            <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
+              {error}
+            </Alert>
+          )}
+          <Box component="form" onSubmit={handleRegister} sx={{ mt: 1, width: '100%' }}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="username"
+              label="Username"
+              name="username"
+              autoComplete="username"
+              autoFocus
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="confirmPassword"
+              label="Confirm Password"
+              type="password"
+              id="confirmPassword"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+            >
+              Sign Up
+            </Button>
+            <Box sx={{ textAlign: 'center' }}>
+              <Link href="/login" variant="body2">
+                {"Already have an account? Sign In"}
+              </Link>
+            </Box>
+          </Box>
+        </Paper>
+      </Box>
+    </Container>
   );
 }
 

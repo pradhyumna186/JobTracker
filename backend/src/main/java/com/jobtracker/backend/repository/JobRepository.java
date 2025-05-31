@@ -11,4 +11,5 @@ import java.util.List;
 public interface JobRepository extends JpaRepository<JobEntity, Long> {
     List<JobEntity> findByUser(UserEntity user);
     List<JobEntity> findTop10ByUserOrderByDateAppliedDesc(UserEntity user);
+    List<JobEntity> findTop5ByUserOrderByDateAppliedDesc(UserEntity user);
 }
